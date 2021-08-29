@@ -99,6 +99,8 @@ void setup() {
   connect_MQTT();
 
   delay(500);
+
+  client.publish("basement/coffeeStatus", "0");
 }
 
 void loop() {
@@ -110,6 +112,8 @@ void loop() {
     digitalWrite(LED_BUILTIN, LOW);
     delay(50);
     digitalWrite(LED_BUILTIN,HIGH);
+    itoa(primed, temp, 10);
+    client.publish("basement/coffeeStatus", temp);
   }
   
   if (!client.connected()) {
@@ -130,8 +134,11 @@ void loop() {
     
     turnOn = 0;
     primed = 0;
+
+    client.publish("basement/coffeeStatus", "0");
   } else if (turnOn == 1 && primed == 0) {
     turnOn = 0;
+    client.publish("basement/coffeeError", "Unable to start: Not Primed");
     
   }
   Serial.print("Primed:");
