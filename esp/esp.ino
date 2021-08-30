@@ -8,7 +8,10 @@ const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 WiFiClient esp_wifi;
 
+// defined constants
 const char* mqtt_server = MQTT_SERVER;
+const char* mqtt_usr = MQTT_USR;
+const char* mqtt_pswd = MQTT_PSWD;
 PubSubClient client(esp_wifi);
 
 const int button_pin =5; //3v, g, D1
@@ -17,10 +20,12 @@ int buttonValue = 0;
 const int servo_pin = 4; //vu, g, D2
 Servo servo;
 
+// status vars
 int turnOn = 0;
 int primed = 0;
 char temp[1];
 
+// Funct to handle mqtt messages
 void callback(String topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.println(topic);
@@ -44,12 +49,13 @@ void callback(String topic, byte* message, unsigned int length) {
   } 
 }
 
+// funct to connect mqtt
 void connect_MQTT() {
   digitalWrite(LED_BUILTIN, LOW);
   while (!client.connected()) {
     Serial.println("MQTT Connecting");
 
-    if (client.connect("ESP8266Client")) {
+    if (client.connect("ESP-450BKC", mqtt_usr, mqtt_pswd)) {
       Serial.println("MQTT Connected");  
       // Subscribe or resubscribe to a topic
       client.subscribe("basement/coffeeMachine");
@@ -63,6 +69,7 @@ void connect_MQTT() {
   digitalWrite(LED_BUILTIN,HIGH);
 }
 
+// funct to connect wifi
 void connect_wifi() {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -74,6 +81,7 @@ void connect_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+// funct to set pin modes and do initial wifi and mqtt set up 
 void setup() {
   // setup Serial
   Serial.begin(9600);
@@ -103,6 +111,8 @@ void setup() {
   client.publish("basement/coffeeStatus", "0");
 }
 
+// checks if button is pressed indicating coffee machine ready (water and grinds added) as safetly mechanism so doesnt turn on empty machine
+// if gets a on from mqtt (in callback()), turns on the machine if primed, else sends error over mqtt saying not primed
 void loop() {
   buttonValue = digitalRead(button_pin);
   
