@@ -12,6 +12,8 @@ WiFiClient esp_wifi;
 const char* mqtt_server = MQTT_SERVER;
 const char* mqtt_usr = MQTT_USR;
 const char* mqtt_pswd = MQTT_PSWD;
+const char* listenTopic = LISTEN;
+const char* publishTopic = PUBLISH; 
 PubSubClient client(esp_wifi);
 
 const int button_pin =5; //3v, g, D1
@@ -41,10 +43,10 @@ void callback(String topic, byte* message, unsigned int length) {
   Serial.println();
   
   // react based on msg and topic
-  if (topic == "basement/coffeeMachine") {
+  if (topic == listenTopic) {
     if (messageTemp == "status") {
       itoa(primed, temp, 10);
-      client.publish("basement/coffeeStatus", temp);
+      client.publish(publishTopic, temp);
       
     } else if (messageTemp == "on") {
       turnOn = 1;
@@ -59,14 +61,15 @@ void connect_MQTT() {
     Serial.println("MQTT Connecting");
 
 	// comment out / uncomment these 2 lines based on mqtt cfg if using pswd
-    //if (client.connect("ESP-450BKC")) {
+	//if (client.connect("ESP-450BKC")) {
 	if (client.connect("ESP-450BKC", mqtt_usr, mqtt_pswd)) {
       Serial.println("MQTT Connected");  
       // Subscribe or resubscribe to a topic
       client.subscribe("basement/coffeeMachine");
     } else {
       Serial.println("Failed. Retrying in 2 seconds");
-      // Wait 5 seconds before retrying
+      
+      // Wait 2 seconds before retrying
       delay(2000);
     }
   }
