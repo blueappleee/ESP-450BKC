@@ -32,13 +32,16 @@ void callback(String topic, byte* message, unsigned int length) {
   Serial.print("Message: ");
   String messageTemp;
   
+  // get msg char by char
   for (int i = 0; i < length; i++) {
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
+  
   Serial.println();
-
-  if (topic=="basement/coffeeMachine") {
+  
+  // react based on msg and topic
+  if (topic == "basement/coffeeMachine") {
     if (messageTemp == "status") {
       itoa(primed, temp, 10);
       client.publish("basement/coffeeStatus", temp);
@@ -55,7 +58,9 @@ void connect_MQTT() {
   while (!client.connected()) {
     Serial.println("MQTT Connecting");
 
-    if (client.connect("ESP-450BKC", mqtt_usr, mqtt_pswd)) {
+	// comment out / uncomment these 2 lines based on mqtt cfg if using pswd
+    //if (client.connect("ESP-450BKC")) {
+	if (client.connect("ESP-450BKC", mqtt_usr, mqtt_pswd)) {
       Serial.println("MQTT Connected");  
       // Subscribe or resubscribe to a topic
       client.subscribe("basement/coffeeMachine");
@@ -134,12 +139,11 @@ void loop() {
     client.connect("ESP8266Client");
   }
 
-
   if (turnOn == 1 && primed == 1) {
     Serial.println("Turning on");
     
-    servo.write(120);
-    delay(200);
+    servo.write(102);
+    delay(250);
     servo.write(0);
     
     turnOn = 0;
